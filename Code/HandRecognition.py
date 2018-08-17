@@ -51,79 +51,78 @@ def segment(image, threshold=25):
 # Main function
 #-------------------------------------------------------------------------------
 if __name__ == "__main__":
-    # initialize weight for running average
+    # Inicializar el peso para sacar los promedios
     aWeight = 0.5
 
-    # get the reference to the webcam
+    # Obtener referencias de la webcam
     camera = cv2.VideoCapture(0)
     width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)/2)
     height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)
     space = 125
 
-    # region of interest (ROI) coordinates
+    # Coordinadas de la ROI(Region de interes)
     top, right, bottom, left = (height-space), (width-space),(height+space),(width+space)
-    
-    # initialize num of frames
+
+    # Inicializar el numero de cuadros
     num_frames = 0
 
-    # keep looping, until interrupted
+    # Ciclo continuo hasta ser interrumpido
     while(True):
-        # get the current frame
+        # Obtener el cuadro actual
         (grabbed, frame) = camera.read()
 
-        # resize the frame
+        # Cambiar tamaño del cuadro
         frame = imutils.resize(frame, width=700)
 
-        # flip the frame so that it is not the mirror view
+        # Rotar hasta no estar invertido
         frame = cv2.flip(frame, 1)
 
-        # clone the frame
+        # Clonar el cuadro
         clone = frame.copy()
 
-        # get the height and width of the frame
+        # Obtener el largo y ancho del cuadro
         (height, width) = frame.shape[:2]
 
-        # get the ROI
+        # Obtener el ROI
         roi = frame[top:bottom, right:left]
 
-        # convert the roi to grayscale and blur it
+        # Convertir el ROI a escala de grises y difuminar
         gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
-        # to get the background, keep looking till a threshold is reached
-        # so that our running average model gets calibrated
+        # Para obtener el segundo plano, seguir mirando hasta obtener pasar el punto de critico
+        # Para calibrar nuestro modelo de promedios
         if num_frames < 30:
             run_avg(gray, aWeight)
         else:
-            # segment the hand region
+            # Segmentar la region de la mano
             hand = segment(gray)
 
-            # check whether hand region is segmented
+            # Asegurar que la region de la mano este segmentada
             if hand is not None:
-                # if yes, unpack the thresholded image and
-                # segmented region
+                # De estarlo, mostrar la imagen limitada y la region segmentada
                 (thresholded, segmented) = hand
 
-                # draw the segmented region and display the frame
+                # Dibujar el segmento y mostrar el cuadro
                 cv2.drawContours(clone, [segmented + (right, top)], -1, (0, 0, 255))
                 cv2.imshow("Thesholded", thresholded)
 
-        # draw the segmented hand
+        # Dibujar la mano segmentada
         cv2.rectangle(clone, (left, top), (right, bottom), (0,255,0), 2)
 
-        # increment the number of frames
+        # Incrementar el numero de cuadros
         num_frames += 1
 
-        # display the frame with segmented hand
+        # Mostrar el cuadro con la mano segmentada
         cv2.imshow("Video Feed", clone)
 
-        # observe the keypress by the user
+        # Esperar por una tecla presionada
         keypress = cv2.waitKey(1) & 0xFF
 
-        # if the user pressed "q", then stop looping
+        # Si el usuario presiona "q", detener
         if keypress == ord("q"):
             break
 
-# free up memory
+# Liberar memoria
 camera.release()
 cv2.destroyAllWindows()
