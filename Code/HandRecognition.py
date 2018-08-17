@@ -56,10 +56,13 @@ if __name__ == "__main__":
 
     # get the reference to the webcam
     camera = cv2.VideoCapture(0)
+    width = int(camera.get(cv2.CAP_PROP_FRAME_WIDTH)/2)
+    height = int(camera.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)
+    space = 125
 
     # region of interest (ROI) coordinates
-    top, right, bottom, left = 10, 350, 225, 590
-
+    top, right, bottom, left = (height-space), (width-space),(height+space),(width+space)
+    
     # initialize num of frames
     num_frames = 0
 
